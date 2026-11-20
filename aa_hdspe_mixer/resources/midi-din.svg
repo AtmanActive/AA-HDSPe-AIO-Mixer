@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- A 5-pin MIDI DIN socket seen from the front: metal shell, black insulator, five pin holes on a
+       180° arc (the MIDI layout), the key notch at the bottom. Colour, like the emoji on the other buttons. -->
+  <defs>
+    <radialGradient id="shell" cx="0.38" cy="0.3" r="0.8">
+      <stop offset="0" stop-color="#f4f6f8"/>
+      <stop offset="0.55" stop-color="#b9c0c8"/>
+      <stop offset="1" stop-color="#7d8590"/>
+    </radialGradient>
+    <radialGradient id="face" cx="0.5" cy="0.35" r="0.75">
+      <stop offset="0" stop-color="#3a4048"/>
+      <stop offset="1" stop-color="#121418"/>
+    </radialGradient>
+    <radialGradient id="pin" cx="0.4" cy="0.35" r="0.7">
+      <stop offset="0" stop-color="#fbe08a"/>
+      <stop offset="1" stop-color="#b98a1e"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="url(#shell)" stroke="#4b525c" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="23.5" fill="#5d6570"/>
+  <circle cx="32" cy="32" r="22.5" fill="url(#face)"/>
+  <path d="M28 55.5 V47.5 a2 2 0 0 1 2 -2 h4 a2 2 0 0 1 2 2 V55.5 Z" fill="url(#shell)" stroke="#4b525c"
+        stroke-width="1"/>
+  <g fill="url(#pin)" stroke="#5a430c" stroke-width="0.8">
+    <circle cx="17.5" cy="32" r="3.6"/>
+    <circle cx="21.7" cy="21.7" r="3.6"/>
+    <circle cx="32" cy="17.5" r="3.6"/>
+    <circle cx="42.3" cy="21.7" r="3.6"/>
+    <circle cx="46.5" cy="32" r="3.6"/>
+  </g>
+  <g fill="#2a1f05">
+    <circle cx="17.5" cy="32" r="1.5"/>
+    <circle cx="21.7" cy="21.7" r="1.5"/>
+    <circle cx="32" cy="17.5" r="1.5"/>
+    <circle cx="42.3" cy="21.7" r="1.5"/>
+    <circle cx="46.5" cy="32" r="1.5"/>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+# Arch Linux / CachyOS package. Built by packaging/arch/build.sh (makepkg, from the source tree it sits in).
+pkgname=aa-hdspe-aio-mixer
+pkgver=${APP_VERSION:?set by build.sh}
+pkgrel=${PKG_RELEASE:-1}
+pkgdesc="Routing-focused hardware mixer for RME HDSPe AIO and AIO Pro audio cards"
+arch=('any')
+url="https://github.com/AtmanActive/AA-HDSPe-AIO-Mixer"
+license=('MIT')
+depends=('python' 'pyside6' 'qt6-declarative' 'qt6-svg' 'alsa-lib')
+optdepends=('python-gobject: keyboard shortcuts (KDE Plasma)'
+            'pipewire: virtual PipeWire devices'
+            'alsa-utils: test tone')
+
+package() {
+    "$APP_SOURCE/packaging/stage.sh" "$pkgdir"
+    install -d "$pkgdir/usr/share/licenses/$pkgname"
+    mv "$pkgdir/usr/share/doc/$pkgname/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

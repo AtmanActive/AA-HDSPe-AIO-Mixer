@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=AA-HDSPe-AIO-Mixer
+GenericName=Hardware Mixer
+Comment=Routing mixer for the RME HDSPe AIO and AIO Pro
+Exec=aa-hdspe-aio-mixer
+Icon=aa-hdspe-aio-mixer
+Terminal=false
+Categories=AudioVideo;Audio;Mixer;
+Keywords=RME;HDSPe;AIO;mixer;routing;TotalMix;
+StartupNotify=true

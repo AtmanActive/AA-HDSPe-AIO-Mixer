@@ -1,0 +1,8 @@
+#!/bin/sh
+# Starts the app with the Python and Qt (PySide6) inside this AppImage. Nothing from the system's Python or
+# Qt is mixed in: those are other versions, and loading them into this process would crash it.
+HERE=$(dirname "$(readlink -f "$0")")
+unset PYTHONHOME QT_PLUGIN_PATH QML_IMPORT_PATH QML2_IMPORT_PATH
+export PYTHONNOUSERSITE=1
+export PYTHONPATH="$HERE/usr/share/aa-hdspe-aio-mixer"
+exec "$HERE/opt/python/bin/python3" -m aa_hdspe_mixer "$@"

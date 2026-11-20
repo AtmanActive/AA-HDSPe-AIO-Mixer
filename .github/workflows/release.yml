@@ -1,0 +1,163 @@
+# Builds the packages and makes a draft release with them, on demand: Actions tab → Release → Run workflow.
+# The version is the one in aa_hdspe_mixer/__init__.py, the release's tag is v<version>. A draft release of
+# that version made before is replaced; a published one stops the run (raise the version first).
+# The build scripts are in packaging/, and run the same way on a computer of that distribution.
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: v
+        run: |
+          v=$(packaging/version.sh)
+          [ -n "$v" ] || { echo "::error::No __version__ in aa_hdspe_mixer/__init__.py"; exit 1; }
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "Version $v" >> "$GITHUB_STEP_SUMMARY"
+
+  test:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install the app's dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            python3 python3-pytest python3-gi gir1.2-glib-2.0 libasound2t64 fonts-dejavu-core \
+            python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qtwidgets python3-pyside6.qtnetwork \
+            python3-pyside6.qtqml python3-pyside6.qtquick python3-pyside6.qtquickcontrols2 python3-pyside6.qtsvg \
+            python3-pyside6.qttest qml6-module-qtquick qml6-module-qtquick-controls qml6-module-qtquick-layouts \
+            qml6-module-qtquick-window qml6-module-qtquick-templates qt6-svg-plugins
+      - name: Tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software          # no GPU on the runners
+        run: python3 -m pytest -q tests
+
+  debian:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - uses: actions/checkout@v5
+      - run: packaging/debian/build.sh
+      - uses: actions/upload-artifact@v5
+        with:
+          name: debian
+          path: dist/*.deb
+          if-no-files-found: error
+
+  fedora:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    container: fedora:latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: dnf install -y rpm-build tar findutils
+      - run: packaging/fedora/build.sh
+      - uses: actions/upload-artifact@v5
+        with:
+          name: fedora
+          path: dist/*.rpm
+          if-no-files-found: error
+
+  arch:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build (makepkg runs as a normal user)
+        run: |
+          useradd --create-home builder
+          chown -R builder "$GITHUB_WORKSPACE"
+          su builder -c "cd '$GITHUB_WORKSPACE' && packaging/arch/build.sh"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: arch
+          path: dist/*.pkg.tar.zst
+          if-no-files-found: error
+
+  appimage:
+    needs: [version, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - run: packaging/appimage/build.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Starts (on a simulated card, offscreen)
+        env:
+          QT_QPA_PLATFORM: offscreen
+          QT_QUICK_BACKEND: software          # no GPU on the runners
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libxkbcommon0 libfontconfig1 libasound2t64
+          f=$(ls dist/*.AppImage)
+          APPIMAGE_EXTRACT_AND_RUN=1 timeout 60 "$f" --mock --screenshot "$RUNNER_TEMP/appimage.png"
+          test -s "$RUNNER_TEMP/appimage.png"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: appimage
+          path: dist/*.AppImage
+          if-no-files-found: error
+
+  release:
+    needs: [version, debian, fedora, arch, appimage]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Draft release
+        run: |
+          TAG="v$VERSION"
+          if draft=$(gh release view "$TAG" --json isDraft --jq .isDraft 2>/dev/null); then
+            if [ "$draft" = "true" ]; then
+              echo "Replacing the earlier draft release $TAG"
+              gh release delete "$TAG" --yes
+            else
+              echo "::error::Release $TAG is already published. Raise __version__ in aa_hdspe_mixer/__init__.py."
+              exit 1
+            fi
+          fi
+          cd dist
+          ls -l
+          cat > notes.md <<EOF
+          ## Downloads
+
+          | System | File | Install |
+          |---|---|---|
+          | Debian 13, Ubuntu 24.04 and later | \`$(ls *.deb)\` | \`sudo apt install ./$(ls *.deb)\` |
+          | Fedora | \`$(ls *.rpm)\` | \`sudo dnf install ./$(ls *.rpm)\` |
+          | CachyOS, Arch Linux | \`$(ls *.pkg.tar.zst)\` | \`sudo pacman -U $(ls *.pkg.tar.zst)\` |
+          | Any other (x86_64) | \`$(ls *.AppImage)\` | \`chmod +x $(ls *.AppImage)\`, then run it |
+
+          The AppImage brings its own Python and Qt. It has everything except keyboard shortcuts, which need
+          the package for your distribution.
+          EOF
+          gh release create "$TAG" --draft --target "$GITHUB_SHA" \
+            --title "AA-HDSPe-AIO-Mixer $VERSION" --notes-file notes.md \
+            *.deb *.rpm *.pkg.tar.zst *.AppImage
+          echo "Draft release $TAG: $(gh release view "$TAG" --json url --jq .url)" >> "$GITHUB_STEP_SUMMARY"
