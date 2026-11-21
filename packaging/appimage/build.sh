@@ -60,9 +60,13 @@ tar -C "$ROOT" --exclude='__pycache__' --exclude='*.pyc' -cf - aa_hdspe_mixer | 
 install -m 755 "$ROOT/packaging/appimage/AppRun" "$APPDIR/AppRun"
 install -m 644 "$ROOT/packaging/$APP.desktop" "$APPDIR/$APP.desktop"
 install -m 644 "$ROOT/aa_hdspe_mixer/resources/icon_fader_3d.svg" "$APPDIR/$APP.svg"
-ln -s "$APP.svg" "$APPDIR/.DirIcon"
+# appimagetool wants .DirIcon as a PNG; the app's own PySide6 draws it from the SVG.
+"$PYBIN" "$ROOT/packaging/appimage/render_icon.py" "$APPDIR/$APP.svg" "$APPDIR/.DirIcon" 256
 
 # ---- pack
+# The Python came out of its AppImage with folders only its owner can read (0700): everyone runs an AppImage.
+chmod -R a+rX "$APPDIR"
+chmod 755 "$APPDIR/AppRun"
 curl -fsSL -o appimagetool.AppImage \
     https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
 chmod +x appimagetool.AppImage
