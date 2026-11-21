@@ -6,6 +6,8 @@
 #   - appimagetool (github.com/AppImage/appimagetool)
 # The system still provides libasound (always there), PipeWire's tools and aplay, as for the packages.
 # Keyboard shortcuts need PyGObject, which has no wheels, so they're off in the AppImage (the app says so).
+# The build runs that Qt once (to draw the icon), so it needs the libraries Qt takes from the system:
+# libEGL, libxkbcommon, fontconfig. Every desktop has them; a bare server or CI runner may not.
 # Usage: packaging/appimage/build.sh
 set -eu
 

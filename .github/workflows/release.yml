@@ -98,6 +98,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - name: Libraries the bundled Qt takes from the system (every desktop has them; the runner doesn't)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libxkbcommon0 libfontconfig1 libasound2t64
       - run: sh packaging/appimage/build.sh
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -106,8 +110,6 @@ jobs:
           QT_QPA_PLATFORM: offscreen
           QT_QUICK_BACKEND: software          # no GPU on the runners
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libegl1 libxkbcommon0 libfontconfig1 libasound2t64
           f=$(ls dist/*.AppImage)
           APPIMAGE_EXTRACT_AND_RUN=1 timeout 60 "$f" --mock --screenshot "$RUNNER_TEMP/appimage.png"
           test -s "$RUNNER_TEMP/appimage.png"
