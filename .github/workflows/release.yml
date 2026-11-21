@@ -148,6 +148,10 @@ jobs:
           cd dist
           ls -l
           cat > notes.md <<EOF
+          Linux desktop application for controlling hardware mixer functions of RME HDSPe AIO (Pro) audio cards.
+
+          Tested on Debian 13 and CachyOS.
+
           ## Downloads
 
           | System | File | Install |

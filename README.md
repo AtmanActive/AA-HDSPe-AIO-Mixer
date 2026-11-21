@@ -373,6 +373,31 @@ packages land in `dist/`:
 The packages install the app in `/usr/share/aa-hdspe-aio-mixer`, outside Python's site-packages, so they
 don't depend on one Python version, with the launcher `/usr/bin/aa-hdspe-aio-mixer`.
 
+
+## Acknowledgements
+This app is based on the excellent open source work of:
+- Winfried Ritsch
+- Paul Davis
+- Marcus Andersson
+- Thomas Charbonnel
+- Remy Bruno
+- Florian Faber
+- Adrian Knoth
+- Philippe Bekaert
+- Takashi Iwai
+- Jaroslav Kysela
+- Jasmin Fazlic
+- Christian Heldt
+- Michel Normand
+- Jordi Mallach
+- Tim Blechmann
+- Georg Rudolph
+- Diego Pettenò
+- Clemens Ladisch
+- wynnfeng
+- Knight-hamza
+- Schroedingers-Cat
+
 ## License
 
 MIT License
