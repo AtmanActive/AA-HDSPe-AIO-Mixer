@@ -25,7 +25,7 @@ devices, and remote control over MIDI, OSC and keyboard shortcuts.
 Works with the in-kernel snd-hdspm driver and the out-of-tree snd-hdspe driver.
 
 %install
-%{app_source}/packaging/stage.sh %{buildroot}
+sh %{app_source}/packaging/stage.sh %{buildroot}
 # The license goes in /usr/share/licenses instead (the files list below).
 rm %{buildroot}%{_docdir}/%{name}/LICENSE
 cp %{app_source}/LICENSE .

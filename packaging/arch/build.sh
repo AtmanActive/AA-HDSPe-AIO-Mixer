@@ -12,6 +12,6 @@ mkdir -p "$WORK" "$ROOT/dist"
 cp "$ROOT/packaging/arch/PKGBUILD" "$WORK/"
 cd "$WORK"
 # --nodeps: nothing is compiled, so the runtime dependencies needn't be installed to build.
-APP_VERSION=$("$ROOT/packaging/version.sh") APP_SOURCE="$ROOT" PKGDEST="$ROOT/dist" PKGEXT=.pkg.tar.zst \
+APP_VERSION=$(sh "$ROOT/packaging/version.sh") APP_SOURCE="$ROOT" PKGDEST="$ROOT/dist" PKGEXT=.pkg.tar.zst \
     makepkg --force --nodeps --noconfirm
 ls "$ROOT"/dist/*.pkg.tar.zst

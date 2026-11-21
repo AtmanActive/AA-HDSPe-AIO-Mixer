@@ -11,7 +11,7 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 APP=aa-hdspe-aio-mixer
-VERSION=$("$ROOT/packaging/version.sh")
+VERSION=$(sh "$ROOT/packaging/version.sh")
 PY=3.12                                  # the Python inside the AppImage
 PYSIDE="PySide6-Essentials>=6.8,<6.9"    # the Qt the app is tested with (Debian 13 has 6.8)
 WORK="$ROOT/build/appimage"

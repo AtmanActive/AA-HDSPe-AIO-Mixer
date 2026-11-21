@@ -5,13 +5,13 @@ set -eu
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 APP=aa-hdspe-aio-mixer
-VERSION=$("$ROOT/packaging/version.sh")
+VERSION=$(sh "$ROOT/packaging/version.sh")
 REL=${PKG_RELEASE:-1}
 WORK="$ROOT/build/debian"
 PKG="$WORK/$APP"
 
 rm -rf "$WORK"
-"$ROOT/packaging/stage.sh" "$PKG"
+sh "$ROOT/packaging/stage.sh" "$PKG"
 
 # Debian's place for the license.
 mv "$PKG/usr/share/doc/$APP/LICENSE" "$PKG/usr/share/doc/$APP/copyright"

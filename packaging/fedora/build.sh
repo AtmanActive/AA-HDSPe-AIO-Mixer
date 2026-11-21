@@ -4,7 +4,7 @@
 set -eu
 
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
-VERSION=$("$ROOT/packaging/version.sh")
+VERSION=$(sh "$ROOT/packaging/version.sh")
 TOP="$ROOT/build/rpm"
 
 rm -rf "$TOP"

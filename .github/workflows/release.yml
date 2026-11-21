@@ -2,6 +2,7 @@
 # The version is the one in aa_hdspe_mixer/__init__.py, the release's tag is v<version>. A draft release of
 # that version made before is replaced; a published one stops the run (raise the version first).
 # The build scripts are in packaging/, and run the same way on a computer of that distribution.
+# They're run with sh, not by their executable bit, which a commit from some systems doesn't keep.
 name: Release
 
 on:
@@ -23,7 +24,7 @@ jobs:
       - uses: actions/checkout@v5
       - id: v
         run: |
-          v=$(packaging/version.sh)
+          v=$(sh packaging/version.sh)
           [ -n "$v" ] || { echo "::error::No __version__ in aa_hdspe_mixer/__init__.py"; exit 1; }
           echo "version=$v" >> "$GITHUB_OUTPUT"
           echo "Version $v" >> "$GITHUB_STEP_SUMMARY"
@@ -54,7 +55,7 @@ jobs:
     container: debian:trixie
     steps:
       - uses: actions/checkout@v5
-      - run: packaging/debian/build.sh
+      - run: sh packaging/debian/build.sh
       - uses: actions/upload-artifact@v5
         with:
           name: debian
@@ -68,7 +69,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - run: dnf install -y rpm-build tar findutils
-      - run: packaging/fedora/build.sh
+      - run: sh packaging/fedora/build.sh
       - uses: actions/upload-artifact@v5
         with:
           name: fedora
@@ -85,7 +86,7 @@ jobs:
         run: |
           useradd --create-home builder
           chown -R builder "$GITHUB_WORKSPACE"
-          su builder -c "cd '$GITHUB_WORKSPACE' && packaging/arch/build.sh"
+          su builder -c "cd '$GITHUB_WORKSPACE' && sh packaging/arch/build.sh"
       - uses: actions/upload-artifact@v5
         with:
           name: arch
@@ -97,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - run: packaging/appimage/build.sh
+      - run: sh packaging/appimage/build.sh
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Starts (on a simulated card, offscreen)
