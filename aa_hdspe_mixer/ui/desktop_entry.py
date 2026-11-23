@@ -9,7 +9,8 @@ It also gives the app a launcher in the application menu.
 
 Installed from a package (.deb, .rpm, Arch package), the package has its own entry in /usr/share: then
 nothing is written, and an entry this file wrote earlier (running from the source) is removed, so it doesn't
-hide the package's. From an AppImage, the entry starts that AppImage.
+hide the package's; so is its icon, which would otherwise stand in for the package's icon (a user-local icon
+comes first in the theme lookup). From an AppImage, the entry starts that AppImage.
 """
 from __future__ import annotations
 
@@ -64,6 +65,21 @@ def _remove_source_entry(entry_path: str) -> bool:
         return False
 
 
+def _icon_path() -> str:
+    return os.path.join(_data_home(), "icons", "hicolor", "scalable", "apps", f"{APP_ID}.svg")
+
+
+def _remove_icon_if_unused(entry_path: str) -> bool:
+    """Remove the user-local icon once no user-local entry of ours is left to show it. Returns True if removed."""
+    if os.path.exists(entry_path):          # e.g. an AppImage's entry, which names this icon by path
+        return False
+    try:
+        os.remove(_icon_path())
+        return True
+    except OSError:
+        return False
+
+
 def _exec_line() -> str:
     appimage = os.environ.get("APPIMAGE")
     if appimage:
@@ -85,12 +101,13 @@ def ensure_desktop_entry(icon_svg: str) -> bool:
         entry_path = os.path.join(_data_home(), "applications", f"{APP_ID}.desktop")
         if not os.environ.get("APPIMAGE") and _system_entry():
             changed = _remove_source_entry(entry_path)
+            changed |= _remove_icon_if_unused(entry_path)
             if changed:
                 _refresh_menu()
             return changed
         with open(icon_svg, "rb") as f:
             icon = f.read()
-        icon_path = os.path.join(_data_home(), "icons", "hicolor", "scalable", "apps", f"{APP_ID}.svg")
+        icon_path = _icon_path()
         entry = "\n".join([
             "[Desktop Entry]",
             "Type=Application",

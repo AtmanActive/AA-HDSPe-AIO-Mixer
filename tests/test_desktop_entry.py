@@ -39,7 +39,28 @@ def test_a_package_entry_replaces_the_one_written_from_the_source(dirs):
     _install_package_entry(dirs["system"])
     assert desktop_entry.ensure_desktop_entry(dirs["icon"])              # ours removed
     assert not dirs["entry"].exists()
+    assert not os.path.exists(desktop_entry._icon_path())                # its icon too
     assert not desktop_entry.ensure_desktop_entry(dirs["icon"])          # and not written again
+
+
+def test_a_leftover_icon_goes_when_the_package_is_installed(dirs):
+    # Seen on CachyOS: the entry from the source was gone, its old icon stayed and hid the package's icon.
+    _install_package_entry(dirs["system"])
+    icon = desktop_entry._icon_path()
+    os.makedirs(os.path.dirname(icon))
+    with open(icon, "w") as f:
+        f.write("<svg>old</svg>")
+    assert desktop_entry.ensure_desktop_entry(dirs["icon"])
+    assert not os.path.exists(icon)
+
+
+def test_an_appimage_entry_keeps_its_icon_beside_a_package(dirs, monkeypatch):
+    monkeypatch.setenv("APPIMAGE", "/home/me/Mixer.AppImage")
+    desktop_entry.ensure_desktop_entry(dirs["icon"])
+    monkeypatch.delenv("APPIMAGE")
+    _install_package_entry(dirs["system"])
+    assert not desktop_entry.ensure_desktop_entry(dirs["icon"])          # the package app runs: nothing removed
+    assert dirs["entry"].exists() and os.path.exists(desktop_entry._icon_path())
 
 
 def test_a_users_own_entry_is_left_alone(dirs):
