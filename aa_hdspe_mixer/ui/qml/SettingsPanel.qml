@@ -17,7 +17,8 @@ import QtQuick.Layouts
 //  - app settings (cog button): the app's own, app-wide settings (AppSettingsSection.qml);
 //  - channel (a pill clicked in the routing view): that channel's meter and controls (ChannelSection.qml).
 //    It has its own scrolling, under a header that stays put.
-// Every section has a header that stays put, with ✕ to close it, and scrolls below it.
+// Every section has a header that stays put, with ✕ to close it, and scrolls below it. The MIDI section also
+// has a footer that stays put at the bottom: a link to a MIDI router.
 // With none open the panel stays, empty. The panel is the same for every card; the contents depend on
 // the card. Nothing in it is stored in presets.
 Rectangle {
@@ -251,6 +252,7 @@ Rectangle {
         anchors.fill: parent
         anchors.leftMargin: 1
         anchors.topMargin: headerLine.y + 1
+        anchors.bottomMargin: footer.visible ? footer.height : 0
         contentHeight: sections.implicitHeight + 32
         clip: true
         boundsBehavior: Flickable.StopAtBounds
@@ -355,6 +357,31 @@ Rectangle {
               visible: mixer.appSettingsOpen
               Layout.fillWidth: true
           }
+        }
+    }
+
+    // The MIDI section's footer: at the bottom of the panel however many bindings there are.
+    Rectangle {
+        id: footer
+        visible: mixer.midiPanelOpen && !mixer.channelOpen
+        anchors.left: parent.left; anchors.right: parent.right; anchors.bottom: parent.bottom
+        anchors.leftMargin: 1
+        height: routerLink.implicitHeight + 24
+        color: Theme.pane
+        Rectangle { width: parent.width; height: 1; color: Theme.border }
+        Label {
+            id: routerLink
+            objectName: "midiRouterLink"
+            readonly property string url: "https://github.com/AtmanActive/Linux-MIDI-snd_seq_dummy-Router"
+            x: 16; anchors.verticalCenter: parent.verticalCenter
+            width: parent.width - 32
+            elide: Text.ElideRight
+            textFormat: Text.StyledText
+            linkColor: Theme.accent          // the default blue is unreadable on the dark theme
+            text: "<a href=\"" + url + "\">Need a MIDI router?</a>"
+            onLinkActivated: (link) => Qt.openUrlExternally(link)
+            HoverHandler { id: hoverLink; cursorShape: Qt.PointingHandCursor }
+            ToolTip.visible: hoverLink.hovered; ToolTip.delay: 600; ToolTip.text: url
         }
     }
 

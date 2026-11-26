@@ -587,6 +587,19 @@ def midi_cards(ui, prefix="midi"):
     return out
 
 
+def test_midi_panel_has_the_router_link_at_its_bottom(ui):
+    ui.win.resize(1400, 900)
+    ui.click(ui.item("midiButton"))
+    link = ui.item("midiRouterLink")
+    assert link.isVisible()
+    assert "Linux-MIDI-snd_seq_dummy-Router" in link.property("text")
+    assert "Need a MIDI router?" in link.property("text")
+    bottom = link.mapToScene(QPointF(0, link.height())).y()
+    assert ui.win.contentItem().height() - bottom < 30                  # at the window's bottom edge
+    ui.click(ui.item("midiButton"))                                     # closed: gone with the section
+    assert not link.isVisible()
+
+
 def test_midi_panel_add_learn_edit_remove(ui):
     from aa_hdspe_mixer.core.alsaseq import Msg
     seq = ui.engine.backend.midi

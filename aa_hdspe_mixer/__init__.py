@@ -4,6 +4,6 @@
 # and so do the release builds (GitHub Actions), with:
 #     python3 -c 'import aa_hdspe_mixer as m; print(m.__version__)'
 # This file imports nothing, so that works without the app's dependencies installed.
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 APP_NAME = "AA-HDSPe-AIO-Mixer"
 APP_ID = "aa-hdspe-aio-mixer"
